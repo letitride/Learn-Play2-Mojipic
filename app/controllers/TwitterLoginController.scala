@@ -30,6 +30,5 @@ abstract class TwitterLoginController(protected val cc: ControllerComponents) ex
       implicit val executionContext:ExecutionContext = cc.executionContext
       result.map(_.withCookies(Cookie(sessionIdName, sessionId, Some(30 * 60))))
     }
-
   }
 }
