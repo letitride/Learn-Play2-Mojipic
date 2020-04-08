@@ -105,6 +105,27 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+dropzone__WEBPACK_IMPORTED_MODULE_2___default.a.options.filedropzone = {
+  paramName: 'file',
+  maxFilesize: 2,
+  dictDefaultMessage: "",
+  thumbnailHeight: 200,
+  thumbnailWidth: 200,
+  init: function init() {
+    this.on("addedfile", function (file) {
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()("#overlaytext").val(jquery__WEBPACK_IMPORTED_MODULE_0___default()("#overlaytext-shown").val());
+      jquery__WEBPACK_IMPORTED_MODULE_0___default()("#overlaytextsize").val(jquery__WEBPACK_IMPORTED_MODULE_0___default()("#overlaytextsize-shown").val());
+    });
+  },
+  accept: function accept(file, done) {
+    done();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".dz-details").remove();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".dz-progress").remove();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".dz-error-message").remove();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".dz-success-mark").remove();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".dz-error-mark").remove();
+  }
+};
 jquery__WEBPACK_IMPORTED_MODULE_0___default()(function () {
   jquery__WEBPACK_IMPORTED_MODULE_0___default()('.button-collapse').sideNav();
 });
