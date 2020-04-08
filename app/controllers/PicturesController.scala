@@ -4,7 +4,10 @@ import java.nio.file.{FileSystems, Files, Path, StandardCopyOption}
 import java.time.{Clock, LocalDateTime}
 
 import com.google.common.net.MediaType
+import com.redis.RedisClient
 import domain.entity.{PictureProperty, TwitterId}
+import domain.repository.PicturePropertyRepository
+import infrastructure.twitter.redis.RedisKeys
 import javax.inject.{Inject, Singleton}
 import play.api.cache.SyncCacheApi
 import play.api.libs.Files.TemporaryFile
@@ -18,7 +21,9 @@ class PicturesController @Inject()(
                                  cc: ControllerComponents,
                                  clock: Clock,
                                  executionContext: ExecutionContext,
-                                 val cache: SyncCacheApi
+                                 val cache: SyncCacheApi,
+                                 picturePropertyRepository: PicturePropertyRepository,
+                                 redisClient: RedisClient,
                                  )extends TwitterLoginController (cc){
 
   implicit val ec = executionContext
@@ -35,8 +40,13 @@ class PicturesController @Inject()(
             val originalFilepath = FileSystems.getDefault.getPath(storeDirPath.toString, System.currentTimeMillis().toString)
             Files.copy(file.ref.path, originalFilepath, StandardCopyOption.COPY_ATTRIBUTES)
             val propertyValue = createPicturePropertyValue(TwitterId(accessToken.getUserId), file, form, originalFilepath)
-            println(propertyValue)
 
+            val pictureId = picturePropertyRepository.create(propertyValue)
+            pictureId.map({ (id) =>
+              redisClient.rpush(RedisKeys.Tasks, id.value)
+              Ok("Picture uploaded.")
+            })
+            
             Future.successful(Ok("Picture uploaded."))
           case _ => Future.successful(Unauthorized("Need picture data."))
         }
