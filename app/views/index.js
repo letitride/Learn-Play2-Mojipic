@@ -29,3 +29,61 @@ Dropzone.options.filedropzone = {
 $(function(){
   $('.button-collapse').sideNav();
 });
+
+class Pictures extends React.Component{
+  constructor(props){
+    super(props);
+    this.lastCreatedTime = null;
+    this.state = {pictures:[]};
+  }
+
+  componentDidMount(){
+    this.updatePictures();
+  }
+
+  updatePictures(){
+    var url = "";
+    if(Mojipic.twitterId()){
+      url = `/users/${Mojipic.twitterId().toString()}/properties`;
+    }else{
+      url = '/properties'
+    }
+
+    fetch(this.appendLastCreatedDate(url)).then((res) => res.json()).then((json) => {
+      const pictures = json.filter((p) => p.value.status === "Success");
+      if(pictures.length > 0){
+        this.lastCreatedTime = pictures[0].value.createdTime;
+      }
+      this.setState((prevState, props) => ({
+        pictures: pictures.concat(prevState.pictures)
+      }));
+    });
+  }
+
+  appendLastCreatedDate(url){
+    if(this.lastCreatedTime){
+      url = url + "?last_created_time=" + encodeURIComponent(this.lastCreatedTime);
+    }
+    return url;
+  }
+  
+  render(){
+    const pictureItems = this.state.pictures.map((picture) =>
+      <div className="col s3" key={picture.id}>
+        <div className="card">
+          <div className="card-image">
+            <a href={'/pictures/' + picture.id}>
+              <img src={'/pictures/' + picture.id} height="150px" />
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+    return (<div id="picture-grid" className="row center"> {pictureItems} </div>);
+  }
+}
+
+ReactDOM.render(
+  <Pictures />,
+  document.getElementById('picture-grid')
+);
