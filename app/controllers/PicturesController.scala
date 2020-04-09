@@ -46,7 +46,7 @@ class PicturesController @Inject()(
               redisClient.rpush(RedisKeys.Tasks, id.value)
               Ok("Picture uploaded.")
             })
-            
+
             Future.successful(Ok("Picture uploaded."))
           case _ => Future.successful(Unauthorized("Need picture data."))
         }
