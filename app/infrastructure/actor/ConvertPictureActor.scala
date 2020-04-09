@@ -45,7 +45,7 @@ class ConvertPictureActor @Inject()(
 
   private [this] def convert(pictureProperty: PictureProperty, picturePropertyRepository: PicturePropertyRepository) = {
     val filepath = FileSystems.getDefault.getPath(storeDirPath.toString, System.currentTimeMillis().toString)
-    val convertPictureProperty: PictureProperty = Try{
+    val convertedPictureProperty: PictureProperty = Try{
       invokeCmd(pictureProperty, filepath)
     } match {
       case Success(_) => PictureProperty(
@@ -59,8 +59,16 @@ class ConvertPictureActor @Inject()(
           pictureProperty.value.copy(status = PictureProperty.Status.Failure))
       }
     }
-    // TODO 変換後の情報で picture_properties を更新
+
+    picturePropertyRepository.update(
+      convertedPictureProperty.id,
+      convertedPictureProperty.value
+    ).onComplete {
+      case Success(_) => Logger.info(s"Converted and updated. convertedPictureProperty: ${convertedPictureProperty}")
+      case Failure(t) => Logger.error("Fail to update.", t)
+    }
   }
+
 
   private[this] def invokeCmd(property: PictureProperty, convertedFilepath: Path): Unit = {
     val cmd = new ConvertCmd()

@@ -83,4 +83,27 @@ class PicturePropertyRepositoryImpl extends PicturePropertyRepository {
       )
     PictureProperty(PictureId(rs.long("picture_id")), value)
   }
+
+  def update(pictureId: PictureId, value: PictureProperty.Value): Future[Unit] =
+     Future.fromTry(Try {
+       using(DB(ConnectionPool.borrow())) { db =>
+         db.localTx { implicit session =>
+           val sql =
+             sql"""UPDATE picture_properties SET
+              | status =  ${value.status.value},
+              | twitter_id = ${value.twitterId.value},
+              | file_name = ${value.fileName},
+              | content_type = ${value.contentType.toString},
+              | overlay_text = ${value.overlayText},
+              | overlay_text_size = ${value.overlayTextSize},
+              | original_filepath = ${value.originalFilepath.getOrElse("")},
+              | converted_filepath = ${value.convertedFilepath.getOrElse("")},
+              | created_time = ${value.createdTime}
+              | WHERE picture_id = ${pictureId.value}""".stripMargin
+           sql.update().apply()
+           ()
+         }
+       }
+     })
+
 }
