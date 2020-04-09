@@ -22,6 +22,7 @@ libraryDependencies += "org.scalikejdbc" %% "scalikejdbc-play-dbapi-adapter" % "
 libraryDependencies += "mysql" % "mysql-connector-java" % "5.1.36"
 libraryDependencies += "net.debasishg" %% "redisclient" % "3.20"
 
+libraryDependencies += "org.im4java" % "im4java" % "1.4.0"
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "jp.ed.nnn.controllers._"
 
