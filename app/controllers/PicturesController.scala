@@ -1,18 +1,21 @@
 package controllers
 
+import java.io.File
 import java.nio.file.{FileSystems, Files, Path, StandardCopyOption}
 import java.time.{Clock, LocalDateTime}
 
+import akka.stream.scaladsl.FileIO
 import com.google.common.net.MediaType
 import com.redis.RedisClient
-import domain.entity.{PictureProperty, TwitterId}
+import domain.entity.{PictureId, PictureProperty, TwitterId}
 import domain.repository.PicturePropertyRepository
 import infrastructure.twitter.redis.RedisKeys
 import javax.inject.{Inject, Singleton}
 import play.api.cache.SyncCacheApi
+import play.api.http.HttpEntity
 import play.api.libs.Files.TemporaryFile
 import play.api.mvc.MultipartFormData.FilePart
-import play.api.mvc.{ControllerComponents, MultipartFormData}
+import play.api.mvc.{ControllerComponents, MultipartFormData, ResponseHeader, Result}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -73,6 +76,23 @@ class PicturesController @Inject()(
       None,
       LocalDateTime.now(clock)
     )
-
   }
+
+  def get(pictureId: Long) = Action.async { request =>
+    val pictureProperty = picturePropertyRepository.find(PictureId(pictureId))
+    pictureProperty.map { pictureProperty =>
+      pictureProperty.value.convertedFilepath match {
+        case Some(convertedFilepath) => {
+          val file = new File(convertedFilepath)
+          val source = FileIO.fromPath(file.toPath)
+          Result(
+            header = ResponseHeader(200, Map.empty),
+            body = HttpEntity.Streamed(source, None, Some(pictureProperty.value.contentType.toString))
+          )
+        }
+        case None => NotFound
+      }
+    }
+  }
+
 }
